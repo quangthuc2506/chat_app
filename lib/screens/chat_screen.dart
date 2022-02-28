@@ -148,7 +148,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                             String roomId = chatRoomId(
                                                 widget.user!.displayName!,
                                                 snapshot.data!.docs[index]['name']);
-
+                        
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(
@@ -251,12 +251,21 @@ class _ChatScreenState extends State<ChatScreen> {
                     AsyncSnapshot<QuerySnapshot> snapshot2) {
                   if (snapshot2.data != null && snapshot2.data!.docs.isNotEmpty) {
                     print('check snapshot 2: ${snapshot2.data!.docs.isNotEmpty}');
-                    return Text(FormatTime().format((snapshot2.data!.docs[0]['time'] as Timestamp).toDate())!,
+                    return Text(
+                      
+                      snapshot2.data!.docs[0]['time'] != null ?
+                      FormatTime().format((snapshot2.data!.docs[0]['time'] as Timestamp).toDate())!
+                      : ""
+                      ,
+
+
+                      
                     overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
                                                 fontSize: 10,
                                                 color: Colors.orange),);
                   } else {
+                    print('check snapshot 2 emty: ${snapshot2.data!.docs.isNotEmpty}');
                     return const Text("");
                   }
                 },

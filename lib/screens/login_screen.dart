@@ -89,6 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 24),
                 child: MyTextFormField(
+                  obscureText: false,
                     hintText: "Enter your email", prefixIcon: Icons.email),
               ),
               MyTextFormField(

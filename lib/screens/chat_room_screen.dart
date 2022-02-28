@@ -9,6 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
@@ -18,6 +19,7 @@ class ChatRoomScreen extends StatefulWidget {
   GoogleSignInAccount? user;
   Map<String, dynamic>? userMap;
   String? chatRoomId;
+
   ChatRoomScreen({Key? key, this.chatRoomId, this.userMap, this.user})
       : super(key: key);
 
@@ -26,9 +28,12 @@ class ChatRoomScreen extends StatefulWidget {
 }
 
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
+  final ScrollController _scrollCtrl = ScrollController();
+
   @override
   void initState() {
     Firebase.initializeApp();
+    
     super.initState();
   }
 
@@ -36,7 +41,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(58),
         child: AppBar(
@@ -86,9 +90,13 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        widget.userMap!['name'],
-                        style: TextStyle(color: Colors.black, fontSize: 14),
+                      SizedBox(
+                        width: 125,
+                        child: Text(
+                          widget.userMap!['name'],
+                          overflow: TextOverflow.clip,
+                          style: TextStyle(color: Colors.black, fontSize: 14),
+                        ),
                       ),
                       const Padding(
                         padding: EdgeInsets.only(top: 4),
@@ -211,9 +219,13 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       ),
       body: Container(
         width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height-80-AppBar().preferredSize.height,
-        padding: EdgeInsets.symmetric(horizontal: 20,vertical: 20),
+        height: MediaQuery.of(context).size.height -
+            80 -
+            AppBar().preferredSize.height,
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: SingleChildScrollView(
+                      controller: _scrollCtrl,
+
           physics: ScrollPhysics(),
           child: Column(
             children: [
@@ -234,30 +246,35 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       itemBuilder: (context, index) {
                         Map<String, dynamic> map = snapshot.data!.docs[index]
                             .data() as Map<String, dynamic>;
+SchedulerBinding.instance!.addPostFrameCallback((_) {
+      _scrollCtrl.jumpTo(_scrollCtrl.position.maxScrollExtent);
+    });
                         if (snapshot.data!.docs[index]['sendby'] ==
                             widget.currentuser!.displayName) {
                           if (map['type'] == 'text') {
                             return ContainerChatRight(
                                 text: snapshot.data!.docs[index]['message']);
                           } else {
-                            return map['message'].toString().isNotEmpty? Align(
-                              alignment: Alignment.centerRight,
-                              child: Container(
-                                margin: EdgeInsets.only(top: 10),
-                                decoration: BoxDecoration(
-                                  borderRadius: const BorderRadius.only(
-                                    bottomRight: Radius.circular(20),
-                                    topLeft: Radius.circular(20),
-                                    topRight: Radius.circular(20),
-                                  ),
-                                  color: Colors.grey[200],
-                                ),
-                                width: 186,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 17, vertical: 12),
-                                child: Image.network(map['message']),
-                              ),
-                            ) :const CircularProgressIndicator();
+                            return map['message'].toString().isNotEmpty
+                                ? Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Container(
+                                      margin: EdgeInsets.only(top: 10),
+                                      decoration: BoxDecoration(
+                                        borderRadius: const BorderRadius.only(
+                                          bottomRight: Radius.circular(20),
+                                          topLeft: Radius.circular(20),
+                                          topRight: Radius.circular(20),
+                                        ),
+                                        color: Colors.grey[200],
+                                      ),
+                                      width: 186,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 17, vertical: 12),
+                                      child: Image.network(map['message']),
+                                    ),
+                                  )
+                                : const CircularProgressIndicator();
                           }
 
                           // Text(snapshot.data!.docs[index]['message'],style: TextStyle(color: Colors.black),);
@@ -267,25 +284,26 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                             return ContainerChatLeft(
                                 text: snapshot.data!.docs[index]['message']);
                           } else {
-                            print("da gui duoc anh: ${map['message']}");
-                            return map['message'].toString().isNotEmpty? Align(
-                              alignment: Alignment.centerLeft,
-                              child: Container(
-                                margin:const EdgeInsets.only(top: 10),
-                                decoration: BoxDecoration(
-                                  borderRadius: const BorderRadius.only(
-                                    bottomRight: Radius.circular(20),
-                                    topLeft: Radius.circular(20),
-                                    topRight: Radius.circular(20),
-                                  ),
-                                  color: Colors.grey[200],
-                                ),
-                                width: 186,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 17, vertical: 12),
-                                child: Image.network(map['message']),
-                              ),
-                            ) : const CircularProgressIndicator();
+                            return map['message'].toString().isNotEmpty
+                                ? Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Container(
+                                      margin: const EdgeInsets.only(top: 10),
+                                      decoration: BoxDecoration(
+                                        borderRadius: const BorderRadius.only(
+                                          bottomRight: Radius.circular(20),
+                                          topLeft: Radius.circular(20),
+                                          topRight: Radius.circular(20),
+                                        ),
+                                        color: Colors.grey[200],
+                                      ),
+                                      width: 186,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 17, vertical: 12),
+                                      child: Image.network(map['message']),
+                                    ),
+                                  )
+                                : const CircularProgressIndicator();
                           }
                         }
                       },
@@ -368,7 +386,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           .collection('chats')
           .doc(fileName)
           .update({"message": imageUrl});
-      print("link la: $imageUrl");
     }
   }
 }
